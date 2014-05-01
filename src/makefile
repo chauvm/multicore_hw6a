@@ -13,8 +13,10 @@ CLASSES = \
 	PacketGenerator.java \
 	AccessControl.java \
 	ParallelAccessControl.java \
+	ParallelPacketWorker.java \
 	ParameterMix.java \
 	PacketWorker.java \
+	ParallelAccessControlVer3.java \
 	AtomicQueue.java \
 	AtomicQueueApp.java \
 	FireWall.java \

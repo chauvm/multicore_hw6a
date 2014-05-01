@@ -1,53 +1,41 @@
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.deuce.Atomic;
 
-public class ParallelAccessControl {
-	private HashMap<Integer, HashSet<Integer>> R;
+public class ParallelAccessControlVer3 {
+	private ConcurrentHashMap<Integer, ConcurrentSkipListSet<Integer>> R;
 	private boolean[] PNG;
 	private boolean[] cache;
 //	ReentrantLock lock;
 	
-	public ParallelAccessControl (int numAddressesLog) {
-		R = new HashMap<Integer, HashSet<Integer>>();
+	public ParallelAccessControlVer3 (int numAddressesLog) {
+		R = new ConcurrentHashMap<Integer, ConcurrentSkipListSet<Integer>>();
 		PNG = new boolean[(int) Math.pow(2, numAddressesLog)];
 		for (int i = 0; i < PNG.length; i++) {
 			PNG[i] = true;
 		}
-//		lock = new ReentrantLock();
 	}
 	
-//	@Atomic
-//	public boolean isForbiddenSource(int source) {
-////		lock.lock();
-//		boolean ans = PNG[source];
-////		lock.unlock();
-//		return ans;
-//	}
 
 	@Atomic
 	public boolean isPermittedTransfer(int source, int destination) {
-//		lock.lock();
 		if (PNG[source])
 			return false;
-		HashSet<Integer> destinationPermissions = R.get(destination);
+		ConcurrentSkipListSet<Integer> destinationPermissions = R.get(destination);
 		boolean ans = (destinationPermissions == null) ? false : destinationPermissions.contains(source);		
-//		lock.unlock();
 		return ans;
 	}
 
 	@Atomic
 	public void updatePermission(Packet configPacket) {
-//		lock.lock();
 		Config config = configPacket.config;
 		PNG[config.address] = config.personaNonGrata;
 		
 		if (!R.containsKey(config.address)) {
-			R.put(config.address, new HashSet<Integer>());
+			R.put(config.address, new ConcurrentSkipListSet<Integer>());
 		}
-		HashSet<Integer> addressPermissions = R.get(config.address);
+		ConcurrentSkipListSet<Integer> addressPermissions = R.get(config.address);
 		
 		if (config.acceptingRange) {
 			for (int i = config.addressBegin; i < config.addressEnd; i++) {
@@ -60,7 +48,6 @@ public class ParallelAccessControl {
 					addressPermissions.remove(i);
 			}			
 		}
-//		lock.unlock();
 	}
 
 }
